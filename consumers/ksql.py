@@ -1,16 +1,18 @@
 """Configures KSQL to combine station and turnstile data"""
+import configparser
 import json
 import logging
+from pathlib import Path
 
 import requests
 
 import topic_check
 
-
 logger = logging.getLogger(__name__)
 
-
-KSQL_URL = "http://0.0.0.0:8088"
+config = configparser.ConfigParser()
+config.read("../config.ini")
+KSQL_URL = config.get('env', 'ksql_server_uri')
 
 KSQL_STATEMENT = """
 CREATE TABLE turnstile (

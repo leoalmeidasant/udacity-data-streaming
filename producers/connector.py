@@ -1,20 +1,21 @@
 """Configures a Kafka Connector for Postgres Station data"""
-import json
+import configparser
 import logging
-import os
+from pathlib import Path
 
 import requests
-
 from jinja2 import Template
+
 import constant
 
 logger = logging.getLogger(__name__)
+config = configparser.ConfigParser()
+config.read(f"{Path(__file__).parents[1]}/config.ini")
 
 
 def _build_connector():
     template = Template(open('stations-connector.json.j2').read())
-    rendered = template.render(jdbc_uri=constant.POSTGRES_JDBC_URI)
-    return json.loads(rendered)
+    return template.render(**config._sections['kafka_connect_cta'])
 
 
 def configure_connector():
@@ -23,7 +24,7 @@ def configure_connector():
 
     connector = _build_connector()
 
-    connect_url = f"{constant.KAFKA_CONNECT_URI}/connectors/{connector['name']}"
+    connect_url = f"{config.get('env', 'kafka_connect_uri')}/connectors/{config.get('kafka_connect_cta', 'name')}"
     resp = requests.get(connect_url)
     if resp.status_code == 200:
         logging.debug("connector already created, skipping recreation")
@@ -33,7 +34,7 @@ def configure_connector():
     resp = requests.post(
         f"{constant.KAFKA_CONNECT_URI}/connectors",
         headers={"Content-Type": "application/json"},
-        data=json.dumps(connector),
+        data=connector,
     )
 
     # Ensure a healthy response was given

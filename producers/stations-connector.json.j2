@@ -1,19 +1,19 @@
 {
-    "name": "stations",
+    "name": "{{ name }}",
     "config": {
-        "connector.class": "io.confluent.connect.jdbc.JdbcSourceConnector",
-        "key.converter": "org.apache.kafka.connect.json.JsonConverter",
-        "key.converter.schemas.enable": false,
-        "value.converter": "org.apache.kafka.connect.json.JsonConverter",
-        "value.converter.schemas.enable": false,
-        "batch.max.rows": 500,
-        "connection.user": "cta_admin",
-        "connection.url": "{{ jdbc_uri }}",
-        "connection.password": "chicago",
-        "table.whitelist": "stations",
-        "mode": "incrementing",
-        "incrementing.column.name": "stop_id",
-        "topic.prefix": "org.chicago.cta.",
-        "poll.interval.ms": 86400000
+        "connector.class": "{{ connector_class }}",
+        "key.converter": "{{ key_converter }}",
+        "key.converter.schemas.enable": {{ key_converter_schemas_enable }},
+        "value.converter": "{{ value_converter }}",
+        "value.converter.schemas.enable": {{ value_converter_schemas_enable }},
+        "batch.max.rows": {{ batch_max_rows }},
+        "connection.user": "{{ connection_user }}",
+        "connection.url": "{{ connection_url}}",
+        "connection.password": "{{ connection_password }}",
+        "table.whitelist": "{{ table_whitelist }}",
+        "mode": "{{ mode }}",
+        "incrementing.column.name": "{{ incrementing_column_name }}",
+        "topic.prefix": "{{ topic_prefix }}",
+        "poll.interval.ms": {{ poll_interval_ms }}
     }
 }

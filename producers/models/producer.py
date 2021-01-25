@@ -1,11 +1,15 @@
 """Producer base-class providing common utilites and functionality"""
+import configparser
 import logging
 import time
+from pathlib import Path
 
 from confluent_kafka.admin import AdminClient, NewTopic
 from confluent_kafka.avro import AvroProducer
 
 logger = logging.getLogger(__name__)
+config = configparser.ConfigParser()
+config.read(f"{Path(__file__).parents[2]}/config.ini")
 
 
 class Producer:
@@ -29,8 +33,8 @@ class Producer:
         self.num_partitions = num_partitions
         self.num_replicas = num_replicas
         self.broker_properties = {
-            'bootstrap.servers': 'PLAINTEXT://0.0.0.0:9092,PLAINTEXT://0.0.0.0:9093,PLAINTEXT://0.0.0.0:9094',
-            'schema.registry.url': 'http://0.0.0.0:8081'
+            'bootstrap.servers': config.get('env', 'kafka_bootstrap_servers'),
+            'schema.registry.url': config.get('env', 'schema_registry_uri')
         }
 
         # If the topic does not already exist, try to create it

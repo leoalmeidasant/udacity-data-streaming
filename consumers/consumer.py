@@ -1,12 +1,15 @@
 """Defines core consumer functionality"""
+import configparser
 import logging
-from dataclasses import asdict
+from pathlib import Path
 
 from confluent_kafka import Consumer, OFFSET_BEGINNING
-from confluent_kafka.avro import AvroConsumer, SerializerError
+from confluent_kafka.avro import AvroConsumer
 from tornado import gen
 
 logger = logging.getLogger(__name__)
+config = configparser.ConfigParser()
+config.read(f"{Path(__file__).parents[1]}/config.ini")
 
 
 class KafkaConsumer:
@@ -28,16 +31,16 @@ class KafkaConsumer:
         self.consume_timeout = consume_timeout
         self.offset_earliest = offset_earliest
         self.broker_properties = {
-            'bootstrap.servers': 'PLAINTEXT://0.0.0.0:9092,PLAINTEXT://0.0.0.0:9093,PLAINTEXT://0.0.0.0:9094',
-            'schema.registry.url': 'http://0.0.0.0:8081',
-            'group.id': 'some_id',
+            'bootstrap.servers': config.get('env', 'kafka_bootstrap_servers'),
+            'group.id': 'consumers',
+            "auto.offset.reset": "earliest" if self.offset_earliest else "latest"
         }
 
         if is_avro is True:
+            self.broker_properties['schema.registry.url'] = config.get('env', 'schema_registry_uri')
             self.consumer = AvroConsumer(config=self.broker_properties)
         else:
-            self.consumer = Consumer({'bootstrap.servers': self.broker_properties.get('bootstrap.servers'),
-                                      'group.id': self.broker_properties.get('group.id')})
+            self.consumer = Consumer(self.broker_properties)
 
         self.consumer.subscribe([topic_name_pattern], on_assign=self.on_assign)
 
@@ -46,8 +49,9 @@ class KafkaConsumer:
 
         logger.debug("Consumer on_assign function complete")
         for partition in partitions:
-            partition.offset = OFFSET_BEGINNING
-
+            consumer.seek(partition)
+            if self.offset_earliest:
+                partition.offset = OFFSET_BEGINNING
         logger.info("partitions assigned for %s", self.topic_name_pattern)
         consumer.assign(partitions)
 
@@ -62,13 +66,14 @@ class KafkaConsumer:
     def _consume(self):
         """Polls for a message. Returns 1 if a message was received, 0 otherwise"""
         logger.debug("Consumer _consume function complete")
-        message = self.consumer.poll(timeout=2.0)
+        message = self.consumer.poll(timeout=1.0)
         if message is not None:
             try:
                 self.message_handler(message)
-            except SerializerError as er:
-                logger.error(f"Error while consuming data: {er.message}")
+            except Exception as err:
+                logger.error(f"Error while consuming data: {err}")
                 return 0
+        logger.info(message)
         return 1
 
     def close(self):
