@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "ksql.py", line 58, in <module>
+    execute_statement()
+  File "ksql.py", line 54, in execute_statement
+    resp.raise_for_status()
+  File "/Users/leonardo.almeida/workspace/nanodegree/streaming/udacity-ds-nanodegree/traffic_optimization/consumers/venv/lib/python3.7/site-packages/requests/models.py", line 943, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 400 Client Error: Bad Request for url: http://0.0.0.0:8088/ksql

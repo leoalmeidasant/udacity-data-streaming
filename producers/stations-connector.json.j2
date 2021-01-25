@@ -1,0 +1,19 @@
+{
+    "name": "stations",
+    "config": {
+        "connector.class": "io.confluent.connect.jdbc.JdbcSourceConnector",
+        "key.converter": "org.apache.kafka.connect.json.JsonConverter",
+        "key.converter.schemas.enable": false,
+        "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+        "value.converter.schemas.enable": false,
+        "batch.max.rows": 500,
+        "connection.user": "cta_admin",
+        "connection.url": "{{ jdbc_uri }}",
+        "connection.password": "chicago",
+        "table.whitelist": "stations",
+        "mode": "incrementing",
+        "incrementing.column.name": "stop_id",
+        "topic.prefix": "org.chicago.cta.",
+        "poll.interval.ms": 86400000
+    }
+}
