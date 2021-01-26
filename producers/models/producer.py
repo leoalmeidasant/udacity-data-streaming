@@ -34,7 +34,8 @@ class Producer:
         self.num_replicas = num_replicas
         self.broker_properties = {
             'bootstrap.servers': config.get('env', 'kafka_bootstrap_servers'),
-            'schema.registry.url': config.get('env', 'schema_registry_uri')
+            'schema.registry.url': config.get('env', 'schema_registry_uri'),
+            "group.id": 'producer_group_id'
         }
 
         # If the topic does not already exist, try to create it
